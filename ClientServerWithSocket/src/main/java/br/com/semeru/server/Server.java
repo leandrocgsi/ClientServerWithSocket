@@ -1,5 +1,6 @@
 package br.com.semeru.server;
 
+import br.com.semeru.utils.ConnectionUtils;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,45 +11,41 @@ import java.net.Socket;
 
 public class Server {
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         System.out.println("Starting server");
-        
-        ServerSocket server = new ServerSocket(2525);
-    
+
+        ServerSocket serverSocket = new ServerSocket(2525);
+
         System.out.println("Waiting connection");
-        
-        Socket socket = server.accept();
-        
-        System.out.println("Connection OK");
-        
-        InputStream input = socket.getInputStream();
-        OutputStream output = socket.getOutputStream();
-        
-        BufferedReader in = new BufferedReader(new InputStreamReader(input));
-        PrintStream out = new PrintStream(output);
-        
-        while (true) {            
-            String mensagem = in.readLine();
-            
-            System.out.println("Message received for the client [" +
-                    socket.getInetAddress().getHostName() + "]: " + mensagem);
-            if ("FIM".equals(mensagem)) {
+
+        Socket socket = serverSocket.accept();
+
+        System.out.println("Connection established");
+
+        InputStream inputStream = socket.getInputStream();
+        OutputStream outputStream = socket.getOutputStream();
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        PrintStream printStream = new PrintStream(outputStream);
+
+        while (true) {
+            String mesage = bufferedReader.readLine();
+
+            System.out.println("Message received for the client ["
+                    + socket.getInetAddress().getHostName() + "]: " + mesage);
+            if ("END".equals(mesage)) {
                 break;
             }
-            out.println(mensagem);            
+            printStream.println(mesage);
         }
-        
+
         System.out.println("Finishing Connection");
-        
-        in.close();
-        
-        out.close();
-        
-        socket.close();
-        
+
+        ConnectionUtils.stopConnection(bufferedReader, printStream, socket);
+
         System.out.println("Stopping Server");
-        
-        server.close();
-        
+
+        serverSocket.close();
+
     }
 }
